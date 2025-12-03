@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script>
+        let PLOTS = [[-50, 50, -50], [-50, -50, -50], [50, -50, -50], [50, 50, -50], [-50, 50, 50], [-50, -50, 50], [50, -50, 50], [50, 50, 50]]
+let LINES = [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]];
+
+let MAXX = 640;
+let MAXY = 480;
+let A_XY = 0;
+let A_YZ = 0;
+let A_XZ = 0;
+let DIST = 600;
+let ZOOM = 1;
+let zoom_direction = true;
+
+function draw() {
+  A_XY+=1;
+  A_YZ+=1;
+  A_XZ+=1;
+  
+  if (zoom_direction) {
+    ZOOM+=0.01;
+  } else {
+    ZOOM-=0.01;  
+  }
+
+  if (ZOOM>2) {
+    zoom_direction = false;
+  } 
+  if (ZOOM<-2) {
+    zoom_direction = true;
+  } 
+
+  
+  var canvas = document.getElementById("cv");
+  
+
+  if (canvas.getContext) {
+    var ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    let PLOTS2 = [];
+    PLOTS.forEach(element => {
+
+        let x = element[0] * ZOOM;
+        let y = element[1] * ZOOM; 
+        let z = element[2] * ZOOM;
+
+        let rad = A_XY * 3.14 / 180;
+        let x1 = x*Math.cos(rad) - y*Math.sin(rad);
+        let y1 = x*Math.sin(rad) + y*Math.cos(rad);
+
+        rad = A_YZ * 3.14 / 180;
+        let y2 = y1*Math.cos(rad) - z*Math.sin(rad);
+        let z1 = y1*Math.sin(rad) + z*Math.cos(rad);
+
+
+        rad = A_XZ * 3.14 / 180;
+        let x3 = x1*Math.cos(rad) - z1*Math.sin(rad);
+        let z3 = x1*Math.sin(rad) + z1*Math.cos(rad);
+
+        let dy = y2 * DIST / (z3 + DIST);
+        let dx = x3 * DIST / (z3 + DIST);
+
+        PLOTS2.push([dx, dy]);
+               
+    });
+     ctx.beginPath();
+ 
+     LINES.forEach(element => {
+       ctx.moveTo(PLOTS2[element[0]][0] + MAXX /  2, PLOTS2[element[0]][1] + MAXY /  2);  
+       ctx.lineTo(PLOTS2[element[1]][0] + MAXX /  2, PLOTS2[element[1]][1] + MAXY /  2);        
+       ctx.stroke();
+    });
+  }
+}
+
+setInterval(draw, 20);
+    </script> 
+    <style>
+        *{
+            text-align: center;
+             height: 100vh;
+        }
+        .main1{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <body onload="draw()">
+        <div class="main1"><canvas id="cv" width="640" height="480"></canvas></div>
+  </body>
+</body>
+</html>
